@@ -33,6 +33,9 @@ body {
     background-color: #ddd;
     border-radius: 50%;
     margin: 0 auto 10px;
+    background-image: url('https://www.pngarts.com/files/10/Default-Profile-Picture-Transparent-Images.png');
+    background-position: center;
+    background-size: contain;
 }
 
 .user-info p {
@@ -108,7 +111,7 @@ body {
     display: flex;
     gap: 15px;
     padding: 15px;
-    background-color: #f9f9f9;
+    background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }

@@ -5,6 +5,8 @@ from sqlalchemy import create_engine, Column, Integer, String, Table, ForeignKey
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.url import URL
+from sqlalchemy.orm import declarative_base
+
 
 # Định nghĩa Base
 Base = declarative_base()
@@ -53,10 +55,10 @@ class Category(Base):
 # Cấu hình cơ sở dữ liệu
 DATABASE = {
     'drivername': 'postgresql+psycopg2',
-    'username': 'library_user',
-    'password': 'library_pass',
+    'username': 'postgres',
+    'password': 'ahihi0709',
     'host': 'localhost',  # Hoặc địa chỉ IP của container Docker nếu cần
-    'port': '54338',
+    'port': '5432',
     'database': 'library_management'
 }
 
@@ -97,7 +99,8 @@ def generate_bio():
     return random.choice(bios)
 
 # Đường dẫn đến tệp CSV
-csv_file_path = './backend/data.csv'
+csv_file_path = 'C:/code/javascript/project/project/backend/data.csv'
+
 
 # Đọc dữ liệu CSV
 with open(csv_file_path, 'r', encoding='utf-8') as f:

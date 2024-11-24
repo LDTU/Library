@@ -2,7 +2,7 @@ import { faPen, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import SearchBar from "../../components/SearchBar/SearchBar";
+import SearchBarAdmin from "./SearchBarAdmin";
 import Modal from "../../components/Modal/Modal";
 import AddForm from "../../components/Form/AddForm";
 import EditForm from "../../components/Form/EditForm";
@@ -52,7 +52,6 @@ function ManageBooks() {
             alert("Thêm sách thành công!");
         } catch (error) {
             console.error("Error adding book:", error);
-            alert("Không thể thêm sách. Vui lòng kiểm tra dữ liệu và thử lại.");
         }
     };
 
@@ -98,7 +97,7 @@ function ManageBooks() {
                 <div className="Borrow-history-header">
                     <h1>Kho sách</h1>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <SearchBar
+                        <SearchBarAdmin
                             placeholder="Tìm kiếm theo tên sách..."
                             onSearch={(value) => setSearchQuery(value)}
                         />
@@ -135,11 +134,23 @@ function ManageBooks() {
                                     onClick={() => {
                                         setVisibleForm(true);
                                         setIsEdit(true);
-                                        setBookData(book);
+                                        setBookData({
+                                            id: book.id,
+                                            title: book.title,
+                                            description: book.description,
+                                            publishedYear: book.publishedYear,
+                                            linkFile: book.linkFile,
+                                            totalStock: book.totalStock,
+                                            availableStock: book.availableStock,
+                                            categoryIds: book.categoryIds || [],
+                                            authorIds: book.authorIds || [],
+                                        });
                                     }}
                                 >
                                     <FontAwesomeIcon icon={faPen} />
                                 </button>
+
+
                                 <button
                                     className="DeleteButton"
                                     onClick={() => deleteBook(book.id)}

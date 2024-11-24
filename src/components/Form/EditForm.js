@@ -5,29 +5,34 @@ import axios from "axios";
 
 function EditForm({ formType, setVisibleForm, bookData, setBookData }) {
     const [updateBookData, setUpdateBookData] = useState({
-        title: "",
-        authors: "",
-        category: "",
-        thumbnail: "",
-        description: "",
-        published_year: "",
-        instock: "",
+        title: bookData.title || "",
+        description: bookData.description || "",
+        publishedYear: bookData.publishedYear || "",
+        linkFile: bookData.linkFile || "",
+        totalStock: bookData.totalStock || "",
+        availableStock: bookData.availableStock || "",
+        categoryIds: bookData.categoryIds || [],
+        authorIds: bookData.authorIds || [],
     });
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setUpdateBookData((prevBookData) => ({
-            ...prevBookData,
-            [name]: value,
+        setUpdateBookData((prev) => ({
+            ...prev,
+            [name]: name === "categoryIds" || name === "authorIds" ? value.split(",").map(Number) : value,
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.put(`http://localhost:8080/api/books/${bookData.id}`, bookData);
+            const payload = {
+                bookId: bookData.id,
+                ...updateBookData,
+            };
+            const response = await axios.put(`http://localhost:8080/api/books/${bookData.id}`, payload);
             setBookData((prevBooks) =>
-                prevBooks.map((item) => (item.id === bookData.id ? response.data : item))
+                prevBooks.map((book) => (book.id === bookData.id ? response.data : book))
             );
             alert("Cập nhật sách thành công!");
             setVisibleForm(false);
@@ -36,6 +41,7 @@ function EditForm({ formType, setVisibleForm, bookData, setBookData }) {
             alert("Không thể cập nhật sách. Vui lòng thử lại.");
         }
     };
+
     return (
         <>
             <form onSubmit={handleSubmit}>
@@ -53,57 +59,66 @@ function EditForm({ formType, setVisibleForm, bookData, setBookData }) {
                             />
                         </label>
                         <label>
-                            Authors:
-                            <input
-                                type="text"
-                                name="authors"
-                                value={updateBookData.authors}
-                                onChange={handleInputChange}
-                            />
-                        </label>
-                        <label>
-                            Categories:
-                            <input
-                                type="text"
-                                name="category"
-                                value={updateBookData.category}
-                                onChange={handleInputChange}
-                            />
-                        </label>
-                        <label>
-                            Published year:
-                            <input
-                                type="text"
-                                name="published_year"
-                                value={updateBookData.published_year}
-                                onChange={handleInputChange}
-                            />
-                        </label>
-                        <label>
-                            Stocks:
-                            <input
-                                type="text"
-                                name="instock"
-                                value={updateBookData.instock}
-                                onChange={handleInputChange}
-                            />
-                        </label>
-                        <label>
-                            Thumbnail:
-                            <input
-                                type="text"
-                                name="thumbnail"
-                                value={updateBookData.thumbnail}
-                                onChange={handleInputChange}
-                            />
-                        </label>
-                        <label>
                             Description:
                             <textarea
                                 name="description"
                                 value={updateBookData.description}
                                 onChange={handleInputChange}
                             ></textarea>
+                        </label>
+                        <label>
+                            Published Year:
+                            <input
+                                type="number"
+                                name="publishedYear"
+                                value={updateBookData.publishedYear}
+                                onChange={handleInputChange}
+                            />
+                        </label>
+                        <label>
+                            Link File (Thumbnail):
+                            <input
+                                type="text"
+                                name="linkFile"
+                                value={updateBookData.linkFile}
+                                onChange={handleInputChange}
+                            />
+                        </label>
+                        <label>
+                            Total Stock:
+                            <input
+                                type="number"
+                                name="totalStock"
+                                value={updateBookData.totalStock}
+                                onChange={handleInputChange}
+                            />
+                        </label>
+                        <label>
+                            Available Stock:
+                            <input
+                                type="number"
+                                name="availableStock"
+                                value={updateBookData.availableStock}
+                                onChange={handleInputChange}
+                            />
+                        </label>
+                        <label>
+                            Categories (IDs, comma-separated):
+                            <input
+                                type="text"
+                                name="categoryIds"
+                                value={updateBookData.categoryIds.join(",")}
+                                onChange={handleInputChange}
+                            />
+                        </label>
+                        <label>
+                            Authors (IDs, comma-separated):
+                            <input
+                                type="text"
+                                name="authorIds"
+                                value={updateBookData.authorIds.join(",")}
+                                onChange={handleInputChange}
+                            />
                         </label>
                     </div>
                 )}

@@ -12,14 +12,14 @@ const SearchBarAdmin = ({ placeholder = "Tìm kiếm...", onSearch }) => {
     };
 
     return (
-        <div className="searchBarWrapper">
+        <div className="searchBarAdminWrapper">
             <input
                 type="text"
                 placeholder={placeholder}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
             />
-            <button className="SearchBarButton" onClick={handleSearch}>
+            <button className="SearchBarAdminButton" onClick={handleSearch}>
                 <FontAwesomeIcon icon={faMagnifyingGlass} />
             </button>
         </div>
