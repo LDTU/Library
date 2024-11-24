@@ -2,9 +2,13 @@
     background-color: #fff;
     padding: 1px 15px;
     border-radius: 30px;
-    display: flex;
     align-items: center;
     height: 2rem;
+    border: 1px solid grey;
+    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
 }
 
 input{
@@ -28,4 +32,17 @@ input:focus{
     left: 10px;
     position: relative;
     border: none;
+}
+
+.searchBarWrapper li{
+    width: 100%;
+    list-style-type: none;
+    padding: 0;
+    background-color: #fff;
+    border: 1px solid grey;
+    padding: 10px 10px;
+}
+
+.searchResults {
+    color:black;
 }

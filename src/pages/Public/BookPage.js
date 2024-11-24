@@ -74,7 +74,7 @@ function BookPage() {
                 <div className="BookPageWrapper">
                     <div className="BookpageContainer1">
                         <div className="BookPageCover">
-                            <img src={book.file}  />
+                            <img src={book.file}/>
                         </div>
                         <div>
                             <div className="BookPageInformations">
@@ -83,14 +83,18 @@ function BookPage() {
                                 <p>Năm xuất bản: {book.pubshedYear || "Không có thông tin"}</p>
                                 <p>Thể loại: {book.categories.length > 0 ? book.categories.map((category) => category.categoryName).join(", ") : "Không có thông tin"}</p>
                                 <p>Mã sách: {book.id}</p>
-                                <div>
+                                
+                            </div>
+                            <div>
+                                <button className="BookPageButton" onClick={handleBorrowClick}>
+                                    Mượn sách
+                                </button>
+                            </div>
+                            <hr></hr>
+                            <div className="description-container">
                                 <b>Mô tả:</b>
                                 <p>{book.description || "Không có thông tin"}</p>
-                                </div>
                             </div>
-                            <button className="BookPageButton" onClick={handleBorrowClick}>
-                                Mượn sách
-                            </button>
                             
                         </div>
                     </div>

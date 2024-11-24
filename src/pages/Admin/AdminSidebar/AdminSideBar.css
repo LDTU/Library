@@ -220,3 +220,30 @@
     gap: 10px;
 }
 
+.edit-form  input{
+    height: fit-content;
+    padding: 20px 20px;
+}
+
+.CancelButton{
+    border-radius: 10px;
+    height: fit-content;
+    background-color: rgb(255, 21, 21);
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    padding: 20px 20px;
+    height: fit-content;
+    margin-left: 10px;
+}
+
+.CancelButton:hover{
+    background-color: rgb(231, 0, 0);
+}
+
+.CancelButton:active{
+    background-color: rgb(146, 0, 0);;
+}

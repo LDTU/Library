@@ -38,19 +38,22 @@ const CategoriesList = () => {
     };
 
     return (
+        <>
         <div className="categories-list">
             <h2>Categories</h2>
             <hr />
-            <ul>
-                {currentCategories.map((category) => (
-                    <CategoryCard
-                        key={category.id}
-                        id={category.id}
-                        title={category.categoryName}
-                        onClick={handleCategoryClick}
-                    />
-                ))}
-            </ul>
+            <div className="categories-list-content">
+                <ul>
+                    {currentCategories.map((category) => (
+                        <CategoryCard
+                            key={category.id}
+                            id={category.id}
+                            title={category.categoryName}
+                            onClick={handleCategoryClick}
+                        />
+                    ))}
+                </ul>
+            </div>
             <div className="pagination">
                 {Array.from({ length: totalPages }, (_, index) => (
                     <button
@@ -63,6 +66,7 @@ const CategoriesList = () => {
                 ))}
             </div>
         </div>
+    </>
     );
 };
 

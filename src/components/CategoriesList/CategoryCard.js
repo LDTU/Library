@@ -4,7 +4,7 @@ import "./CategoryCard.css";
 function CategoryCard({ title, id, onClick }) {
     return (
         <div className="CategoryCardWrapper" onClick={() => onClick(id)}>
-            <b>{title}</b>
+            <b>{id}. {title}</b>
         </div>
     );
 }
