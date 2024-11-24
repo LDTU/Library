@@ -5,22 +5,22 @@ import axios from "axios";
 import SearchBarAdmin from "./SearchBarAdmin";
 import Modal from "../../components/Modal/Modal";
 import AddForm from "../../components/Form/AddForm";
-import EditForm from "../../components/Form/EditForm";
 
 function ManageBooks() {
     const [books, setBooks] = useState([]);
     const [visibleForm, setVisibleForm] = useState(false);
-    const [formType, setFormType] = useState("book");
+    const [isEdit, setIsEdit] = useState(false);
     const [bookData, setBookData] = useState({
+        id: null,
         title: "",
-        authors: "",
-        category: "",
-        thumbnail: "",
         description: "",
         published_year: "",
+        thumbnail: "",
         instock: "",
+        availableStock: "",
+        categoryIds: [],
+        authorIds: [],
     });
-    const [isEdit, setIsEdit] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
     // Fetch books from API
@@ -38,24 +38,44 @@ function ManageBooks() {
         fetchBooks();
     }, []);
 
-    // Add book via API
-    const addBook = async () => {
+    const saveBook = async (bookData) => {
         try {
-            const response = await axios.post("http://localhost:8080/api/books", {
+            const payload = {
+                bookId: bookData.id || null, // ID là null nếu thêm mới
                 title: bookData.title,
                 description: bookData.description,
-                publishedYear: bookData.published_year,
+                publishedYear: parseInt(bookData.published_year, 10),
                 linkFile: bookData.thumbnail,
-                totalStock: bookData.instock,
-            });
-            setBooks((prevBooks) => [...prevBooks, response.data]);
-            alert("Thêm sách thành công!");
+                totalStock: parseInt(bookData.instock || 0, 10),
+                availableStock: parseInt(bookData.availableStock || 0, 10),
+                categoryIds: bookData.categoryIds || [],
+                authorIds: bookData.authorIds || [],
+            };
+    
+            const response = await axios.post("http://localhost:8080/api/inventories/create", payload);
+    
+            if (bookData.id) {
+                // Nếu đang chỉnh sửa, cập nhật danh sách sách
+                setBooks((prevBooks) =>
+                    prevBooks.map((book) =>
+                        book.id === bookData.id ? response.data.book : book
+                    )
+                );
+            } else {
+                // Nếu đang thêm mới, thêm sách vào danh sách
+                setBooks((prevBooks) => [...prevBooks, response.data.book]);
+            }
+    
+            setVisibleForm(false); // Đóng form sau khi lưu
+            alert("Lưu sách thành công!");
         } catch (error) {
-            console.error("Error adding book:", error);
+            console.error("Error saving book:", error.response?.data || error.message);
+            alert("Không thể lưu sách. Vui lòng thử lại.");
         }
     };
+    
+    
 
-    // Delete book via API
     const deleteBook = async (id) => {
         if (!window.confirm("Bạn có chắc chắn muốn xóa sách này?")) return;
         try {
@@ -68,7 +88,42 @@ function ManageBooks() {
         }
     };
 
-    // Lọc sách dựa trên tìm kiếm
+    const editBook = async (bookId) => {
+        try {
+            // Gọi API để lấy chi tiết sách
+            const response = await axios.get(`http://localhost:8080/api/books/inventory-info`);
+            const bookDetail = response.data.find((book) => book.id === bookId);
+    
+            if (!bookDetail) {
+                alert("Không tìm thấy sách với ID này.");
+                return;
+            }
+    
+            // Kiểm tra và gán giá trị mặc định nếu tồn kho bị thiếu
+            const totalStock = bookDetail.totalStock || 0;
+            const availableStock = bookDetail.availableStock || 0;
+    
+            setBookData({
+                id: bookDetail.id,
+                title: bookDetail.title,
+                description: bookDetail.description,
+                published_year: bookDetail.publishedYear || "",
+                thumbnail: bookDetail.linkFile || "",
+                instock: totalStock,
+                availableStock: availableStock,
+                categoryIds: [], // Vì API này không cung cấp danh mục, để trống hoặc gọi thêm API khác nếu cần
+                authorIds: [], // Tương tự với tác giả
+            });
+    
+            setIsEdit(true);
+            setVisibleForm(true);
+        } catch (error) {
+            console.error("Error fetching book details:", error);
+            alert("Không thể tải thông tin sách. Vui lòng thử lại.");
+        }
+    };
+    
+    
     const filteredBooks = books.filter((book) =>
         book.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -76,21 +131,12 @@ function ManageBooks() {
     return (
         <>
             <Modal onClose={() => setVisibleForm(false)} isOpen={visibleForm}>
-                {isEdit ? (
-                    <EditForm
-                        bookData={bookData}
-                        setBookData={setBookData}
-                        formType={formType}
-                        setVisibleForm={setVisibleForm}
-                    />
-                ) : (
-                    <AddForm
-                        bookData={bookData}
-                        setBookData={setBookData}
-                        setVisibleForm={setVisibleForm}
-                        add={addBook}
-                    />
-                )}
+                <AddForm
+                    bookData={bookData}
+                    setBookData={setBookData}
+                    setVisibleForm={setVisibleForm}
+                    save={saveBook} // Truyền hàm saveBook
+                />
             </Modal>
 
             <div className="borrow-history">
@@ -105,8 +151,18 @@ function ManageBooks() {
                             className="CreateButton"
                             onClick={() => {
                                 setVisibleForm(true);
-                                setFormType("book");
-                                setIsEdit(false);
+                                setIsEdit(false); // Đặt chế độ là thêm mới
+                                setBookData({
+                                    id: null,
+                                    title: "",
+                                    description: "",
+                                    published_year: "",
+                                    thumbnail: "",
+                                    instock: "",
+                                    availableStock: "",
+                                    categoryIds: [],
+                                    authorIds: [],
+                                }); // Reset dữ liệu về trạng thái mặc định
                             }}
                         >
                             <FontAwesomeIcon icon={faPlus} />
@@ -126,31 +182,15 @@ function ManageBooks() {
                                 />
                                 <div className="borrow-details">
                                     <h3 className="book-title">{book.title}</h3>
-                                    <p>Trong kho: {book.totalStock}</p>
+                                    <p>Trong kho: {book.totalStock || "N/A"}</p>
                                     <p>Đang được mượn: {book.borrowingCount || 0}</p>
                                 </div>
                                 <button
                                     className="UpdateButton"
-                                    onClick={() => {
-                                        setVisibleForm(true);
-                                        setIsEdit(true);
-                                        setBookData({
-                                            id: book.id,
-                                            title: book.title,
-                                            description: book.description,
-                                            publishedYear: book.publishedYear,
-                                            linkFile: book.linkFile,
-                                            totalStock: book.totalStock,
-                                            availableStock: book.availableStock,
-                                            categoryIds: book.categoryIds || [],
-                                            authorIds: book.authorIds || [],
-                                        });
-                                    }}
+                                    onClick={() => editBook(book.id)} // Sử dụng book.id để truyền đúng ID của sách
                                 >
                                     <FontAwesomeIcon icon={faPen} />
                                 </button>
-
-
                                 <button
                                     className="DeleteButton"
                                     onClick={() => deleteBook(book.id)}

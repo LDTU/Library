@@ -28,7 +28,7 @@ function NavBar() {
     <>
       <nav className="navbar">
         <Link to="/" className="navBarLogo">
-          Logo
+          <img src="https://i.imgur.com/YVydVYH.png"/>
         </Link>
         <SearchBar items={books} />
         <button className="menuButton" onClick={() => setOpenMenu(!openMenu)}>
