@@ -13,27 +13,37 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
+        // Kiểm tra thông tin bắt buộc
+        if (
+            !bookData.title ||
+            !bookData.description ||
+            !bookData.published_year ||
+            !bookData.thumbnail ||
+            !bookData.instock
+        ) {
+            alert("Vui lòng nhập đầy đủ thông tin sách!");
+            return;
+        }
+    
         try {
-            // Prepare category and author arrays
+            // Tách danh mục và tác giả từ input
             const categories = newCategory.split(",").map((cat) => cat.trim());
             const authors = newAuthor.split(",").map((auth) => auth.trim());
-
-            // Prepare data for POST request
+    
+            // Tạo dữ liệu mới cho POST
             const updatedBookData = {
-                title: bookData.title,
-                description: bookData.description,
+                ...bookData,
                 publishedYear: bookData.published_year,
-                linkFile: bookData.thumbnail,
-                totalStock: bookData.instock,
-                availableStock: bookData.instock, // Assuming all stock is initially available
+                totalStock: parseInt(bookData.instock, 10),
+                availableStock: parseInt(bookData.instock, 10), // availableStock = totalStock
                 categoryNames: categories,
                 authorNames: authors,
             };
-
-            // POST request to save inventory
-            await axios.post("http://localhost:8080/api/inventories/create", updatedBookData);
-
+    
+            // Gọi hàm `save` truyền từ props
+            await save(updatedBookData);
+    
             // Reset form
             setBookData({
                 id: null,
@@ -43,8 +53,8 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
                 thumbnail: "",
                 instock: "",
                 availableStock: "",
-                categoryIds: [],
-                authorIds: [],
+                categoryNames: [],
+                authorNames: [],
             });
             setNewCategory("");
             setNewAuthor("");
@@ -54,15 +64,13 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
             alert("Không thể thêm sách. Vui lòng kiểm tra dữ liệu và thử lại.");
         }
     };
+    
 
     return (
         <>
-            <form  onSubmit={(e) => {
-
-                                    save(bookData); 
-                                            }}>
+            <form onSubmit={handleSubmit}>
                 <div className="admin-form-container">
-                    <h3>Thêm sách</h3>
+                    <h3>{bookData.id ? "Chỉnh sửa sách" : "Thêm sách mới"}</h3>
                     <label>
                         Tiêu đề:
                         <input
@@ -76,6 +84,7 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
                     <label>
                         Mô tả:
                         <textarea
+                            required
                             name="description"
                             value={bookData.description}
                             onChange={handleInputChange}
@@ -84,7 +93,8 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
                     <label>
                         Năm xuất bản:
                         <input
-                            type="text"
+                            required
+                            type="number"
                             name="published_year"
                             value={bookData.published_year}
                             onChange={handleInputChange}
@@ -93,6 +103,7 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
                     <label>
                         Tổng số lượng:
                         <input
+                            required
                             type="number"
                             name="instock"
                             value={bookData.instock}
@@ -100,8 +111,9 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
                         />
                     </label>
                     <label>
-                        Link file (thumbnail):
+                        Link file:
                         <input
+                            required
                             type="text"
                             name="thumbnail"
                             value={bookData.thumbnail}
@@ -126,11 +138,12 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
                             onChange={(e) => setNewAuthor(e.target.value)}
                         />
                     </label>
+                    <button className="admin-button-form" type="submit">
+                        {bookData.id ? "Cập nhật" : "Thêm mới"}
+                    </button>
                 </div>
-                <button className="admin-button-form" type="submit">
-                    Thêm
-                </button>
             </form>
+
         </>
     );
 }

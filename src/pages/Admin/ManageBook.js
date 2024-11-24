@@ -39,30 +39,42 @@ function ManageBooks() {
     }, []);
 
     const saveBook = async (bookData) => {
+        // Kiểm tra thông tin bắt buộc
+        if (
+            !bookData.title ||
+            !bookData.description ||
+            !bookData.published_year ||
+            !bookData.thumbnail ||
+            !bookData.instock
+        ) {
+            alert("Vui lòng nhập đầy đủ thông tin sách!");
+            return;
+        }
+    
         try {
             const payload = {
-                bookId: bookData.id || null, // ID là null nếu thêm mới
+                bookId: bookData.id || null, // null nếu thêm mới
                 title: bookData.title,
                 description: bookData.description,
                 publishedYear: parseInt(bookData.published_year, 10),
                 linkFile: bookData.thumbnail,
-                totalStock: parseInt(bookData.instock || 0, 10),
-                availableStock: parseInt(bookData.availableStock || 0, 10),
-                categoryIds: bookData.categoryIds || [],
-                authorIds: bookData.authorIds || [],
+                totalStock: parseInt(bookData.instock, 10),
+                availableStock: parseInt(bookData.instock, 10), // availableStock = totalStock khi thêm mới
+                categoryNames: bookData.categoryNames || [], // Danh mục là danh sách tên
+                authorNames: bookData.authorNames || [], // Tác giả là danh sách tên
             };
     
             const response = await axios.post("http://localhost:8080/api/inventories/create", payload);
     
             if (bookData.id) {
-                // Nếu đang chỉnh sửa, cập nhật danh sách sách
+                // Nếu chỉnh sửa, cập nhật danh sách sách
                 setBooks((prevBooks) =>
                     prevBooks.map((book) =>
                         book.id === bookData.id ? response.data.book : book
                     )
                 );
             } else {
-                // Nếu đang thêm mới, thêm sách vào danh sách
+                // Nếu thêm mới, thêm sách vào danh sách
                 setBooks((prevBooks) => [...prevBooks, response.data.book]);
             }
     
@@ -73,6 +85,8 @@ function ManageBooks() {
             alert("Không thể lưu sách. Vui lòng thử lại.");
         }
     };
+    
+    
     
     
 
