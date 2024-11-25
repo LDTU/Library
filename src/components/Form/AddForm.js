@@ -8,9 +8,15 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setBookData({ ...bookData, [name]: value });
+    
+        // Xử lý danh mục và tác giả đặc biệt
+        if (name === "categoryNames" || name === "authorNames") {
+            setBookData({ ...bookData, [name]: value.split(",").map((item) => item.trim()) });
+        } else {
+            setBookData({ ...bookData, [name]: value });
+        }
     };
-
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
     
@@ -27,16 +33,20 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
         }
     
         try {
-            // Tách danh mục và tác giả từ input
-            const categories = newCategory.split(",").map((cat) => cat.trim());
-            const authors = newAuthor.split(",").map((auth) => auth.trim());
+            // Nếu người dùng không thay đổi danh mục/tác giả, sử dụng dữ liệu đang có trong form
+            const categories = newCategory
+                ? newCategory.split(",").map((cat) => cat.trim())
+                : bookData.categoryNames;
+            const authors = newAuthor
+                ? newAuthor.split(",").map((auth) => auth.trim())
+                : bookData.authorNames;
     
             // Tạo dữ liệu mới cho POST
             const updatedBookData = {
                 ...bookData,
                 publishedYear: bookData.published_year,
                 totalStock: parseInt(bookData.instock, 10),
-                availableStock: parseInt(bookData.instock, 10), // availableStock = totalStock
+                availableStock: parseInt(bookData.availableStock || bookData.instock, 10),
                 categoryNames: categories,
                 authorNames: authors,
             };
@@ -63,12 +73,11 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
             console.error("Error adding book:", error);
             alert("Không thể thêm sách. Vui lòng kiểm tra dữ liệu và thử lại.");
         }
-    };
-    
+    };    
 
     return (
         <>
-            <form onSubmit={handleSubmit}>
+           <form onSubmit={handleSubmit}>
                 <div className="admin-form-container">
                     <h3>{bookData.id ? "Chỉnh sửa sách" : "Thêm sách mới"}</h3>
                     <label>
@@ -111,6 +120,16 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
                         />
                     </label>
                     <label>
+                        Số lượng có sẵn:
+                        <input
+                            required
+                            type="number"
+                            name="availableStock"
+                            value={bookData.availableStock}
+                            onChange={handleInputChange}
+                        />
+                    </label>
+                    <label>
                         Link file:
                         <input
                             required
@@ -124,26 +143,28 @@ function AddForm({ bookData, setBookData, setVisibleForm, save }) {
                         Danh mục (cách nhau bằng dấu phẩy):
                         <input
                             type="text"
-                            placeholder="Nhập danh mục, ví dụ: Khoa học, Lịch sử"
-                            value={newCategory}
+                            name="categoryNames"
+                            value={newCategory || (bookData.categoryNames ? bookData.categoryNames.join(", ") : "")}
                             onChange={(e) => setNewCategory(e.target.value)}
+                            placeholder="Nhập danh mục, ví dụ: Khoa học, Lịch sử"
                         />
                     </label>
                     <label>
                         Tác giả (cách nhau bằng dấu phẩy):
                         <input
                             type="text"
-                            placeholder="Nhập tác giả, ví dụ: Nguyễn Văn A, Trần Thị B"
-                            value={newAuthor}
+                            name="authorNames"
+                            value={newAuthor || (bookData.authorNames ? bookData.authorNames.join(", ") : "")}
                             onChange={(e) => setNewAuthor(e.target.value)}
+                            placeholder="Nhập tác giả, ví dụ: Nguyễn Văn A, Trần Thị B"
                         />
                     </label>
+
                     <button className="admin-button-form" type="submit">
                         {bookData.id ? "Cập nhật" : "Thêm mới"}
                     </button>
                 </div>
             </form>
-
         </>
     );
 }

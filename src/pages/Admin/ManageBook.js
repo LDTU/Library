@@ -39,7 +39,6 @@ function ManageBooks() {
     }, []);
 
     const saveBook = async (bookData) => {
-        // Kiểm tra thông tin bắt buộc
         if (
             !bookData.title ||
             !bookData.description ||
@@ -53,17 +52,18 @@ function ManageBooks() {
     
         try {
             const payload = {
-                bookId: bookData.id || null, // null nếu thêm mới
+                bookId: bookData.id || null,
                 title: bookData.title,
                 description: bookData.description,
                 publishedYear: parseInt(bookData.published_year, 10),
                 linkFile: bookData.thumbnail,
                 totalStock: parseInt(bookData.instock, 10),
-                availableStock: parseInt(bookData.instock, 10), // availableStock = totalStock khi thêm mới
-                categoryNames: bookData.categoryNames || [], // Danh mục là danh sách tên
-                authorNames: bookData.authorNames || [], // Tác giả là danh sách tên
+                availableStock: parseInt(bookData.availableStock || bookData.instock, 10),
+                categoryNames: bookData.categoryNames || [], // Lấy từ form
+                authorNames: bookData.authorNames || [], // Lấy từ form
             };
     
+            // POST dữ liệu
             const response = await axios.post("http://localhost:8080/api/inventories/create", payload);
     
             if (bookData.id) {
@@ -78,8 +78,9 @@ function ManageBooks() {
                 setBooks((prevBooks) => [...prevBooks, response.data.book]);
             }
     
-            setVisibleForm(false); // Đóng form sau khi lưu
+            setVisibleForm(false);
             alert("Lưu sách thành công!");
+            window.location.reload();
         } catch (error) {
             console.error("Error saving book:", error.response?.data || error.message);
             alert("Không thể lưu sách. Vui lòng thử lại.");
@@ -104,29 +105,30 @@ function ManageBooks() {
 
     const editBook = async (bookId) => {
         try {
-            // Gọi API để lấy chi tiết sách
-            const response = await axios.get(`http://localhost:8080/api/books/inventory-info`);
-            const bookDetail = response.data.find((book) => book.id === bookId);
+            // Gọi API inventory-info
+            const inventoryResponse = await axios.get(`http://localhost:8080/api/books/inventory-info`);
+            const bookInventory = inventoryResponse.data.find((book) => book.id === bookId);
     
-            if (!bookDetail) {
-                alert("Không tìm thấy sách với ID này.");
+            if (!bookInventory) {
+                alert("Không tìm thấy sách với ID này trong Inventory.");
                 return;
             }
     
-            // Kiểm tra và gán giá trị mặc định nếu tồn kho bị thiếu
-            const totalStock = bookDetail.totalStock || 0;
-            const availableStock = bookDetail.availableStock || 0;
+            // Gọi API /api/books để lấy chi tiết sách
+            const bookResponse = await axios.get(`http://localhost:8080/api/books/${bookId}`);
+            const bookDetail = bookResponse.data;
     
+            // Kết hợp dữ liệu từ hai API
             setBookData({
                 id: bookDetail.id,
                 title: bookDetail.title,
                 description: bookDetail.description,
-                published_year: bookDetail.publishedYear || "",
-                thumbnail: bookDetail.linkFile || "",
-                instock: totalStock,
-                availableStock: availableStock,
-                categoryIds: [], // Vì API này không cung cấp danh mục, để trống hoặc gọi thêm API khác nếu cần
-                authorIds: [], // Tương tự với tác giả
+                published_year: bookInventory.publishedYear || bookDetail.pubshedYear || "", // Ưu tiên từ inventory-info
+                thumbnail: bookDetail.file || "",
+                instock: bookInventory.totalStock || 0,
+                availableStock: bookInventory.availableStock || 0,
+                categoryNames: bookDetail.categories.map((cat) => cat.categoryName), // Danh sách tên danh mục
+                authorNames: bookDetail.authors.map((auth) => auth.name), // Danh sách tên tác giả
             });
     
             setIsEdit(true);
@@ -136,6 +138,8 @@ function ManageBooks() {
             alert("Không thể tải thông tin sách. Vui lòng thử lại.");
         }
     };
+    
+    
     
     
     const filteredBooks = books.filter((book) =>
